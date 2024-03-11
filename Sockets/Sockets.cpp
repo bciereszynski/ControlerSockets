@@ -28,6 +28,9 @@ public:
 	int read(char* recvbuf, int len) {
 		return recv(sc, recvbuf, len, 0);
 	}
+	~TCPSocket() {
+		closesocket(sc);
+	}
 };
 
 class UDPSocket : public SmartSocket {
@@ -47,12 +50,13 @@ public:
 	}
 
 	int read(char* recvbuf, int len) {
-		socklen_t leng;
+		int SenderAddrSize = sizeof(servaddr);
 		int n = recvfrom(sc, (char*)recvbuf, len,
-			MSG_WAITALL, (struct sockaddr*)&servaddr,
-			&leng);
-		recvbuf[n] = '\0';
+			MSG_WAITALL, (struct sockaddr*)&servaddr, &SenderAddrSize);
 		return n;
+	}
+	~UDPSocket() {
+		closesocket(sc);
 	}
 };
 
@@ -128,9 +132,9 @@ public:
 
 int main()
 {
-	SocketManager* sm = new TCPSocketManager();
+	SocketManager* sm = new UDPSocketManager();
 
-	TCPSocket* sc = (TCPSocket*)sm->CreateSocket("127.0.0.1", 8080);
+	SmartSocket* sc = sm->CreateSocket("127.0.0.1", 8080);
 
 	int bytesSent;
 	int bytesRecv = SOCKET_ERROR;
@@ -142,7 +146,7 @@ int main()
 
 	while (bytesRecv == SOCKET_ERROR)
 	{
-		bytesRecv = (*sc).read(recvbuf, 32);
+		bytesRecv = (*sc).read(recvbuf, 30);
 
 		if (bytesRecv == 0 || bytesRecv == WSAECONNRESET)
 		{
@@ -156,8 +160,6 @@ int main()
 		printf("Bytes received: %ld\n", bytesRecv);
 		printf("Received text: %s\n", recvbuf);
 	}
-
-	system("pause");
 
 }
 
