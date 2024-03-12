@@ -7,7 +7,7 @@
 
 class SmartSocket {
 public:
-	virtual int write(const char* sendbuf) = 0;
+	virtual int write(const char* sendbuf, size_t len) = 0;
 	virtual int read(char* recvbuf, int len) = 0;
 };
 
@@ -16,7 +16,7 @@ private:
 	SOCKET sc;
 public:
 	TCPSocket(SOCKET _sc);
-	int write(const char* sendbuf) override;
+	int write(const char* sendbuf, size_t len) override;
 	int read(char* recvbuf, int len) override;
 	~TCPSocket();
 };
@@ -28,7 +28,7 @@ private:
 	SOCKET sc;
 public:
 	UDPSocket(SOCKET _sc, sockaddr_in _servaddr);
-	int write(const char* sendbuf) override;
+	int write(const char* sendbuf, size_t len) override;
 	int read(char* recvbuf, int len) override;
 	~UDPSocket();
 };

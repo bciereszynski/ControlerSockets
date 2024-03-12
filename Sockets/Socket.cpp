@@ -5,8 +5,8 @@
 TCPSocket::TCPSocket(SOCKET _sc) {
 	sc = _sc;
 }
-int TCPSocket::write(const char* sendbuf) {
-	return send(sc, sendbuf, strlen(sendbuf), 0);
+int TCPSocket::write(const char* sendbuf, size_t len) {
+	return send(sc, sendbuf, len, 0);
 }
 int TCPSocket::read(char* recvbuf, int len) {
 	return recv(sc, recvbuf, len, 0);
@@ -20,8 +20,8 @@ UDPSocket::UDPSocket(SOCKET _sc, sockaddr_in _servaddr) {
 	sc = _sc;
 	servaddr = _servaddr;
 }
-int UDPSocket::write(const char* sendbuf) {
-	return sendto(sc, (const char*)sendbuf, strlen(sendbuf),
+int UDPSocket::write(const char* sendbuf, size_t len) {
+	return sendto(sc, (const char*)sendbuf, len,
 		0, (const struct sockaddr*)&servaddr,
 		sizeof(servaddr));
 }
