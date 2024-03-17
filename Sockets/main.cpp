@@ -14,7 +14,7 @@
 
 int main()
 {
-	struct ControllerState controller;
+	struct ControllerState controllerState, lastStateController;
 	CXBOXController* Player1;
 	SocketManager* sm = new TCPSocketManager();
 
@@ -27,6 +27,7 @@ int main()
 	int deadline = 3000;
 	char sendbuf[sizeof(struct ControllerState)];
 
+	boolean isStoped = true;
 
 	using frames = std::chrono::duration<int64_t, std::ratio<1, 10>>;
 	auto nextFrame = std::chrono::system_clock::now();
@@ -39,19 +40,23 @@ int main()
         {
 			left = Player1->GetState().Gamepad.sThumbLY;
 			right = Player1->GetState().Gamepad.sThumbRY;
-			if (abs(left) > deadline || abs(right) > deadline) {
-				controller.leftThumb = (left * 255) / SHRT_MAX;
-				controller.rightThumb = (right * 255) / SHRT_MAX;
-				memcpy(sendbuf, &controller, sizeof(controller));
+			if (abs(left) < deadline)
+				left = 0;
+			if (abs(right) < deadline)
+				right = 0;
+			controllerState.leftThumb = (left * 255) / SHRT_MAX;
+			controllerState.rightThumb = (right * 255) / SHRT_MAX;
+			if (lastStateController != controllerState) {
+				memcpy(sendbuf, &controllerState, sizeof(controllerState));
 				sc->write(sendbuf, sizeof(struct ControllerState));
 			}
+			lastStateController = controllerState;
         }
         else
         {
             std::cout << "\n\tERROR! PLAYER 1 - XBOX 360 Controller Not Found!\n";
-            std::cout << "Press Any Key To Exit.";
+            std::cout << "Press Any Key To Try reconect.";
             std::cin.get();
-            break;
         }
     }
 

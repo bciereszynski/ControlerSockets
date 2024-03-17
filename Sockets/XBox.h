@@ -16,6 +16,15 @@
 struct ControllerState {
     int16_t leftThumb;
     int16_t rightThumb;
+
+    bool operator==(const ControllerState& other)
+    {
+        return (leftThumb == other.leftThumb && rightThumb == other.rightThumb);
+    }
+    bool operator!=(const ControllerState& other)
+    {
+        return !operator==(other);
+    }
 };
 
 // XBOX Controller Class Definition
