@@ -57,27 +57,32 @@ int main(int argc, char** argv)
 	try {
 		sc = sm->CreateSocket(address, port);
 	}
-	catch(std::exception e){
+	catch (std::exception e) {
 		return(1);
 	}
-	
 
-    Player1 = new CXBOXController(1);
+
+	Player1 = new CXBOXController(1);
 	int left, right;
-	
+
 	char sendbuf[sizeof(struct ControllerState)];
 
-	boolean isStoped = true;
+	boolean isStopped = true;
+	boolean isDisconected = true;
 
 	using frames = std::chrono::duration<int64_t, std::ratio<1, 10>>;
 	auto nextFrame = std::chrono::system_clock::now();
-    while (true)
-    {
+	while (true)
+	{
 		std::this_thread::sleep_until(nextFrame);
 		nextFrame += frames{ 1 };
 
-        if (Player1->IsConnected())
-        {
+		if (Player1->IsConnected())
+		{
+			if (isDisconected) {
+				isDisconected = false;
+				std::cerr << "Controller connected!\n";
+			}
 			left = Player1->GetState().Gamepad.sThumbLY;
 			right = Player1->GetState().Gamepad.sThumbRY;
 			if (abs(left) < deadline)
@@ -89,19 +94,21 @@ int main(int argc, char** argv)
 			if (lastStateController != controllerState) {
 				memcpy(sendbuf, &controllerState, sizeof(controllerState));
 				sc->write(sendbuf, sizeof(struct ControllerState));
+				std::cerr << "SEND: " << controllerState.leftThumb << " " << controllerState.rightThumb << "\n";
 			}
 			lastStateController = controllerState;
-        }
-        else
-        {
-            std::cout << "\n\tERROR! PLAYER 1 - XBOX 360 Controller Not Found!\n";
-            std::cout << "Press Any Key To Try reconect.";
-            std::cin.get();
-        }
-    }
+		}
+		else
+		{
+			isDisconected = true;
+			std::cerr << "ERROR! XBOX 360 Controller Not Found!\n";
+			std::cerr << "System will try again after 5 seconds...\n";
+			nextFrame += std::chrono::seconds(5);
+		}
+	}
 
-    delete(Player1);
+	delete(Player1);
 
-    return(0);
+	return(0);
 }
 

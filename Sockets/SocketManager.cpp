@@ -1,10 +1,12 @@
+#include <iostream>
 #include "SocketManager.h"
+
 SocketManager::SocketManager() {
 	WSADATA wsaData;
 
 	int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
 	if (result != NO_ERROR)
-		printf("Initialization error.\n");
+		std::cerr << "Initialization error...\n";
 	}
 
 sockaddr_in SocketManager::CreateService(const char* addr, u_short port) {
@@ -20,9 +22,9 @@ sockaddr_in SocketManager::CreateService(const char* addr, u_short port) {
 void TCPSocketManager::Connect(SOCKET* sc, sockaddr_in* service) {
 	if (connect(*sc, (SOCKADDR*)service, sizeof(*service)) == SOCKET_ERROR)
 	{
-		printf("connect: %d\n", WSAGetLastError());
-		printf("Failed to connect.\n");
+		std::cerr << "Failed to connect to remote socket..."  << WSAGetLastError() << "\n";
 		WSACleanup();
+		throw std::exception("connect");
 	}
 }
 
@@ -31,7 +33,7 @@ TCPSocket* TCPSocketManager::CreateSocket(const char* addr, u_short port)
 	SOCKET sc = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (sc == INVALID_SOCKET)
 	{
-		printf("Error creating socket: %ld\n", WSAGetLastError());
+		std::cerr << "Error creating socket..." << WSAGetLastError() << "\n";
 		WSACleanup();
 		throw std::exception("create socket error");
 	}
@@ -46,7 +48,7 @@ SmartSocket* UDPSocketManager::CreateSocket(const char* addr, u_short port)
 	SOCKET sc = socket(AF_INET, SOCK_DGRAM, 0);
 	if (sc == INVALID_SOCKET)
 	{
-		printf("Error creating socket: %ld\n", WSAGetLastError());
+		std::cerr << "Error creating socket..." << WSAGetLastError() << "\n";
 		WSACleanup();
 		throw std::exception("create socket error");
 	}
