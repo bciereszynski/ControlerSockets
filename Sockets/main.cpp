@@ -2,29 +2,69 @@
 #include <cstdio>
 #include <cstdlib>
 #include <thread>
+#include <exception>
 
 #include <iostream>
 
 #include "Socket.h"
 #include "SocketManager.h"
 #include "XBox.h"
+#include "InputParser.h"
 
 #pragma comment(lib,"WS2_32")
 
 
-int main()
+int main(int argc, char** argv)
 {
+	InputParser input(argc, argv);
 	struct ControllerState controllerState, lastStateController;
 	CXBOXController* Player1;
 	SocketManager* sm = new TCPSocketManager();
 
-	//SmartSocket* sc = sm->CreateSocket("127.0.0.1", 8080);
-	SmartSocket* sc = sm->CreateSocket("83.6.65.43", 8080);	
+	const std::string& p_host = input.getCmdOption("--host");
+	const std::string& p_port = input.getCmdOption("--port");
+	const std::string& p_deadline = input.getCmdOption("--deadline");
+	const char* address;
+	if (!p_host.empty()) {
+		address = p_host.c_str();
+	}
+	else
+	{
+		std::cerr << "--host arg is missing. IP address is set to default value [127.0.0.1]\n";
+		address = "127.0.0.1";
+	}
+
+	int port;
+	if (!p_port.empty()) {
+		port = std::stoi(p_port);
+	}
+	else
+	{
+		std::cerr << "--port arg is missing. Port is set to default value [8080]\n";
+		port = 8080;
+	}
+
+	int deadline;
+	if (!p_deadline.empty()) {
+		deadline = std::stoi(p_deadline);
+	}
+	else {
+		std::cerr << "--deadline arg is missing. Deadline is set to default value [3000]\n";
+		deadline = 3000;
+	}
+
+	SmartSocket* sc;
+	try {
+		sc = sm->CreateSocket(address, port);
+	}
+	catch(std::exception e){
+		return(1);
+	}
 	
 
     Player1 = new CXBOXController(1);
 	int left, right;
-	int deadline = 3000;
+	
 	char sendbuf[sizeof(struct ControllerState)];
 
 	boolean isStoped = true;

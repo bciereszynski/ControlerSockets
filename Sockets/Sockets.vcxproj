@@ -127,12 +127,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="InputParser.cpp" />
     <ClCompile Include="Socket.cpp" />
     <ClCompile Include="SocketManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="XBox.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="InputParser.h" />
     <ClInclude Include="Socket.h" />
     <ClInclude Include="SocketManager.h" />
     <ClInclude Include="XBox.h" />
